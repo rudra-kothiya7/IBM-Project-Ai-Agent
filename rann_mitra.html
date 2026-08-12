@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rann Mitra — Eco-Tourism Planner</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: #f0f4f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    background: #1a3a2a;
+    color: #fff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 3px solid #c8973a;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-logo {
+    width: 46px; height: 46px;
+    background: #c8973a;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900;
+    color: #1a3a2a; flex-shrink: 0;
+  }
+  .header-text h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .header-text p  { font-size: 11.5px; color: #b0c8b0; margin-top: 2px; }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(200,151,58,0.15);
+    border: 1px solid rgba(200,151,58,0.5);
+    color: #e8c07a;
+    font-size: 10.5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* ── Main ── */
+  .main {
+    width: 100%; max-width: 780px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Chat window ── */
+  .chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 400px;
+    max-height: calc(100vh - 230px);
+  }
+
+  /* ── Bubbles ── */
+  .bubble { display: flex; gap: 10px; align-items: flex-start; max-width: 88%; animation: fadeIn 0.2s ease; }
+  .bubble.user { align-self: flex-end; flex-direction: row-reverse; }
+  .bubble.bot  { align-self: flex-start; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .bot  .avatar { background: #1a3a2a; color: #c8973a; }
+  .user .avatar { background: #c8973a; color: #fff; }
+
+  .bubble-content {
+    background: #fff;
+    border: 1px solid #e0e7e0;
+    border-radius: 14px;
+    padding: 11px 15px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1f2328;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  .user .bubble-content {
+    background: #1a3a2a; color: #e8f4e8;
+    border-color: #1a3a2a;
+    border-radius: 14px 14px 4px 14px;
+  }
+  .bot .bubble-content { border-radius: 4px 14px 14px 14px; }
+
+  /* Markdown styles inside bubbles */
+  .bubble-content h3 {
+    font-size: 13.5px; font-weight: 700;
+    color: #1a3a2a; margin: 12px 0 5px;
+    border-bottom: 1px solid #e0e7e0;
+    padding-bottom: 3px;
+  }
+  .bubble-content strong { font-weight: 700; color: #8a5a10; }
+  .user .bubble-content strong { color: #e8c888; }
+  .bubble-content em { font-style: italic; color: #4a6a5a; }
+  .user .bubble-content em { color: #b0d0b0; }
+  .bubble-content ul, .bubble-content ol { padding-left: 20px; margin: 6px 0; }
+  .bubble-content li { margin-bottom: 4px; }
+  .bubble-content p  { margin-bottom: 7px; }
+  .bubble-content p:last-child { margin-bottom: 0; }
+  .bubble-content blockquote {
+    border-left: 3px solid #c8973a;
+    padding-left: 10px;
+    color: #57706a; margin: 6px 0;
+    font-style: italic;
+  }
+  .bubble-content code {
+    background: #f0f4f0; padding: 1px 5px;
+    border-radius: 4px; font-size: 12.5px; font-family: monospace;
+  }
+  .bubble-content table {
+    border-collapse: collapse; width: 100%;
+    font-size: 12.5px; margin: 8px 0;
+  }
+  .bubble-content th {
+    background: #1a3a2a; color: #c8973a;
+    padding: 6px 10px; text-align: left; font-size: 12px;
+  }
+  .bubble-content td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #e0e7e0;
+    vertical-align: top;
+  }
+  .bubble-content tr:nth-child(even) td { background: #f7faf7; }
+  .bubble-content hr { border: none; border-top: 1px solid #e0e7e0; margin: 10px 0; }
+
+  /* ── Thinking dots ── */
+  .thinking { display: flex; gap: 5px; align-items: center; padding: 4px 2px; }
+  .thinking span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #c8973a; display: inline-block;
+    animation: bounce 1s infinite;
+  }
+  .thinking span:nth-child(2) { animation-delay: 0.16s; }
+  .thinking span:nth-child(3) { animation-delay: 0.32s; }
+  @keyframes bounce {
+    0%,80%,100% { transform:translateY(0); opacity:.4; }
+    40%          { transform:translateY(-7px); opacity:1; }
+  }
+
+  /* ── Suggestion chips ── */
+  .suggestions {
+    padding: 8px 16px 4px;
+    display: flex; flex-wrap: wrap; gap: 7px;
+  }
+  .chip {
+    background: #fff;
+    border: 1px solid rgba(200,151,58,0.45);
+    color: #1a3a2a;
+    font-size: 12px; padding: 5px 13px;
+    border-radius: 20px; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .chip:hover { background: #1a3a2a; color: #c8973a; border-color: #1a3a2a; }
+
+  /* ── Input bar ── */
+  .input-bar {
+    background: #fff;
+    border-top: 1px solid #d8e0d8;
+    padding: 12px 16px;
+    display: flex; gap: 10px; align-items: flex-end;
+    position: sticky; bottom: 0;
+  }
+  .input-bar textarea {
+    flex: 1;
+    font-family: inherit; font-size: 14px; color: #1f2328;
+    border: 1px solid #c0d0c0; border-radius: 10px;
+    padding: 9px 13px; resize: none; outline: none;
+    min-height: 42px; max-height: 120px; line-height: 1.5;
+    background: #fafafa;
+    transition: border-color 0.15s;
+  }
+  .input-bar textarea:focus { border-color: #1a3a2a; background: #fff; }
+  .input-bar textarea::placeholder { color: #8a9a8a; }
+  .send-btn {
+    background: #1a3a2a; color: #c8973a;
+    border: none; border-radius: 10px;
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+  }
+  .send-btn:hover   { background: #2a5a3a; }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+  /* ── Welcome card ── */
+  .welcome-card {
+    background: #fff;
+    border: 1px solid #e0e7e0;
+    border-left: 4px solid #c8973a;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .welcome-card h2 { font-size: 15px; font-weight: 700; color: #1a3a2a; margin-bottom: 7px; }
+  .welcome-card p  { font-size: 13px; color: #4a6a5a; line-height: 1.65; margin-bottom: 9px; }
+  .agent-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .pill {
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 20px; border: 1px solid; font-weight: 600;
+  }
+  .p1 { background:#fff8ec; color:#9a6a10; border-color:#e8c07a; }
+  .p2 { background:#ecf8f0; color:#1a5a3a; border-color:#7ac8a0; }
+  .p3 { background:#f0ecf8; color:#4a2a7a; border-color:#b09ad8; }
+  .p4 { background:#f8ecec; color:#7a1a2a; border-color:#d87a8a; }
+  .p5 { background:#ecf4f8; color:#1a4a6a; border-color:#7aaad8; }
+
+  /* ── Footer ── */
+  footer {
+    width: 100%;
+    text-align: center;
+    font-size: 11px;
+    color: #8a9a8a;
+    padding: 10px 0 14px;
+    border-top: 1px solid #d8e0d8;
+    background: #f0f4f0;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">R</div>
+  <div class="header-text">
+    <h1>RANN MITRA</h1>
+    <p>Smart Rann of Kutch Eco-Tourism &amp; Carrying Capacity Planner</p>
+  </div>
+  <div class="header-badge">🌿 Eco · Responsible · Local</div>
+</div>
+
+<div class="main">
+  <div class="chat-window" id="chatWindow">
+    <div class="bubble bot">
+      <div class="avatar">R</div>
+      <div class="bubble-content">
+        <div class="welcome-card">
+          <h2>Kem Cho! I'm Rann Mitra 🏜️</h2>
+          <p>Your eco-tourism planning companion for the <strong>Rann of Kutch</strong> — I help you plan sustainable visits, assess site carrying capacity, discover artisan communities, and forecast crowd levels so you travel lightly and meaningfully.</p>
+          <p>Ask me about itineraries, best travel dates, local crafts, ecologically sensitive zones, or request a site impact dashboard.</p>
+          <div class="agent-pills">
+            <span class="pill p1">📊 Load Forecast</span>
+            <span class="pill p2">🗺️ Itinerary Planner</span>
+            <span class="pill p3">🌿 Carrying Capacity</span>
+            <span class="pill p4">🧵 Artisan &amp; Community</span>
+            <span class="pill p5">📋 Impact Dashboard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="suggestions" id="suggestions">
+    <div class="chip" data-q="Plan a 3-day sustainable itinerary for Kutch in January for a couple">🗓️ 3-day Jan itinerary</div>
+    <div class="chip" data-q="How crowded will Dhordo White Desert be on New Year's Eve?">📊 New Year's crowd forecast</div>
+    <div class="chip" data-q="Which Kutch sites are most ecologically fragile and why?">🌿 Fragile sites guide</div>
+    <div class="chip" data-q="I want to buy Rogan art and Ajrakh fabric — where should I go?">🧵 Artisan villages</div>
+    <div class="chip" data-q="Give me a quick impact dashboard for major Kutch tourist sites">📋 Site dashboard</div>
+  </div>
+
+  <div class="input-bar">
+    <textarea id="userInput" placeholder="Ask about itineraries, crowd forecast, crafts, eco-capacity…" rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" title="Send">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<footer>Made with IBM Bob &nbsp;·&nbsp; Rann Mitra — Eco-Tourism Planner for Rann of Kutch</footer>
+
+<script>
+// ─────────────────────────────────────────────
+//  Configuration
+// ─────────────────────────────────────────────
+const GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE"; // Replace with your key from https://console.groq.com
+const GROQ_MODEL   = "llama-3.3-70b-versatile";
+const GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions";
+
+const SYSTEM_PROMPT = `You are RANN MITRA, an AI agentic system for the "Smart Rann of Kutch Eco-Tourism & Carrying Capacity Planner". You run on a single LLM call per turn, so you internally simulate FIVE specialist agents and decide which one(s) should answer based on the user's message. Never say "as an AI" or explain your architecture unless asked — just answer as Rann Mitra.
+
+=== YOUR FIVE INTERNAL AGENTS ===
+
+1. LOAD FORECAST AGENT — estimates tourist inflow/crowding for a place and date range (Rann Utsav runs ~Nov to Feb, peak around Dec 25–Jan 5 and weekends; White Desert/Dhordo is by far the most crowded site). Reasons using seasonality, weekends/holidays, festival dates, and known hotspot vs offbeat status. Give a Low/Medium/High/Peak load label with a one-line reason, not fake precise numbers.
+
+2. ITINERARY AGENT — builds sustainable, multi-day itineraries. Rules:
+   - Always mix 1 famous site with 1–2 lesser-known alternatives (e.g. instead of only Dhordo White Desert, suggest Kalo Dungar viewpoint, Banni grassland villages, Bhirandiyara, Hodka, Mandvi beach/shipbuilding yards, Lakhpat fort).
+   - Recommend homestays/local guesthouses over large resorts where possible.
+   - Include realistic travel times within Kutch district and best time of day (e.g. sunset at White Desert, early morning at Chhari Dhand for birds).
+   - Flag water-scarce or fragile stretches and advise minimal-waste behavior (carry own water bottle, no single-use plastic, stay on marked tracks).
+
+3. ECOLOGICAL CARRYING CAPACITY AGENT — for any site, give a qualitative capacity verdict using known facts: Banni grasslands (grazing land, invasive Prosopis juliflora issue), Great Rann salt desert (extremely fragile crust, vehicles must stay on designated tracks), Chhari Dhand wetland (bird sanctuary, disturbance-sensitive Nov–Mar), Wild Ass Sanctuary (largest wildlife sanctuary in India, Indian wild ass/khur habitat). When unsure of an exact numeric limit, say so plainly instead of inventing a number.
+
+4. ARTISAN & COMMUNITY LINKAGE AGENT — connects tourists to genuine Kutch crafts and the villages/communities behind them: Nirona (Rogan art, bell making, lacquer work), Bhujodi (weaving), Ajrakhpur (Ajrakh block printing), Hodka/Banni (Rabari/Meghwal embroidery, mirror work), Khavda (pottery). Encourage buying directly from artisans/cooperatives, respectful photography (ask before photographing people), and fair pricing — never quote invented prices as fact, describe them as indicative/approximate.
+
+5. IMPACT DASHBOARD AGENT — when asked for a "report", "dashboard", or "summary", output a compact markdown table with columns: Site | Load Level | Ecological Sensitivity | Suggested Action. Keep it short (max 6 rows).
+
+=== ROUTING ===
+Silently decide which agent(s) apply. Blend outputs into ONE coherent reply. Use bold headings like **Load Forecast** or **Itinerary Suggestion** only when there are 2+ sections.
+
+=== OUTPUT STYLE ===
+- Be concise. No long preambles, no restating the question.
+- Use short markdown: bullet points for lists, table only when explicitly useful.
+- Default 120–250 words; for full multi-day plans go longer but stay structured (Day 1 / Day 2 headers).
+- Never fabricate exact statistics. Use qualitative terms: low/medium/high, "roughly", "typically".
+- If ambiguous, make one reasonable assumption, state it briefly, and proceed.
+- Always weave in one sustainability nudge when relevant — one line, not a lecture.
+
+=== SCOPE GUARDRAILS ===
+- Stay focused on Kutch/Rann of Kutch eco-tourism.
+- You are a planning assistant, not a booking engine.
+- If the user writes in Hindi/Gujarati or a mix, reply in the same mix naturally.`;
+
+// ─────────────────────────────────────────────
+//  Conversation history
+// ─────────────────────────────────────────────
+const history = [{ role: "system", content: SYSTEM_PROMPT }];
+
+// ─────────────────────────────────────────────
+//  Minimal Markdown → HTML renderer
+// ─────────────────────────────────────────────
+function md(text) {
+  // Escape HTML
+  let t = text
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+  // Tables: | col | col |\n|---|---|\n| val | val |
+  t = t.replace(/\|(.+)\|\r?\n\|[-| :]+\|\r?\n((?:\|.+\|\r?\n?)+)/g, (_, hdr, rows) => {
+    const ths = hdr.split("|").filter(c => c.trim()).map(c => `<th>${c.trim()}</th>`).join("");
+    const trs = rows.trim().split(/\r?\n/).map(row => {
+      const tds = row.split("|").filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`).join("");
+      return `<tr>${tds}</tr>`;
+    }).join("");
+    return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+  });
+
+  // Headings
+  t = t.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+  t = t.replace(/^## (.+)$/gm,  "<h3>$1</h3>");
+
+  // Bold & italic
+  t = t.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
+  t = t.replace(/\*\*(.+?)\*\*/g,     "<strong>$1</strong>");
+  t = t.replace(/\*(.+?)\*/g,         "<em>$1</em>");
+
+  // Blockquote
+  t = t.replace(/^&gt; (.+)$/gm, "<blockquote>$1</blockquote>");
+
+  // HR
+  t = t.replace(/^---+$/gm, "<hr>");
+
+  // Inline code
+  t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+  // Unordered list items
+  t = t.replace(/^[-•*] (.+)$/gm, "<li>$1</li>");
+  t = t.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+
+  // Ordered list
+  t = t.replace(/^\d+\. (.+)$/gm, "<li>$1</li>");
+
+  // Paragraphs — split on double newlines
+  const chunks = t.split(/\n{2,}/);
+  const html = chunks.map(chunk => {
+    chunk = chunk.trim();
+    if (!chunk) return "";
+    if (/^<(h3|ul|ol|table|blockquote|hr)/.test(chunk)) return chunk;
+    // single-line breaks within a paragraph
+    chunk = chunk.replace(/\n/g, "<br>");
+    return `<p>${chunk}</p>`;
+  }).join("\n");
+
+  return html;
+}
+
+// ─────────────────────────────────────────────
+//  DOM helpers
+// ─────────────────────────────────────────────
+const chatWindow = document.getElementById("chatWindow");
+const userInput  = document.getElementById("userInput");
+const sendBtn    = document.getElementById("sendBtn");
+const suggestions = document.getElementById("suggestions");
+
+function scrollBottom() {
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function appendBubble(role, text) {
+  const wrap = document.createElement("div");
+  wrap.className = `bubble ${role}`;
+
+  const av = document.createElement("div");
+  av.className = "avatar";
+  av.textContent = role === "bot" ? "R" : "Y";
+
+  const content = document.createElement("div");
+  content.className = "bubble-content";
+  content.innerHTML = role === "bot" ? md(text) : `<p>${text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</p>`;
+
+  wrap.appendChild(av);
+  wrap.appendChild(content);
+  chatWindow.appendChild(wrap);
+  scrollBottom();
+  return content;
+}
+
+function showThinking() {
+  const wrap = document.createElement("div");
+  wrap.className = "bubble bot";
+  wrap.id = "thinking";
+
+  const av = document.createElement("div");
+  av.className = "avatar";
+  av.textContent = "R";
+
+  const content = document.createElement("div");
+  content.className = "bubble-content";
+  content.innerHTML = '<div class="thinking"><span></span><span></span><span></span></div>';
+
+  wrap.appendChild(av);
+  wrap.appendChild(content);
+  chatWindow.appendChild(wrap);
+  scrollBottom();
+}
+
+function hideThinking() {
+  const el = document.getElementById("thinking");
+  if (el) el.remove();
+}
+
+// ─────────────────────────────────────────────
+//  Send message → Groq API
+// ─────────────────────────────────────────────
+async function sendMessage(text) {
+  text = (text || userInput.value).trim();
+  if (!text) return;
+
+  // Hide chips after first use
+  suggestions.style.display = "none";
+
+  userInput.value = "";
+  userInput.style.height = "auto";
+  sendBtn.disabled = true;
+
+  appendBubble("user", text);
+  history.push({ role: "user", content: text });
+
+  showThinking();
+
+  try {
+    const res = await fetch(GROQ_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: history,
+        temperature: 0.7,
+        max_tokens: 900,
+        top_p: 1,
+        stream: false
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data  = await res.json();
+    const reply = data?.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response. Please try again.";
+
+    history.push({ role: "assistant", content: reply });
+    hideThinking();
+    appendBubble("bot", reply);
+
+  } catch (err) {
+    hideThinking();
+    appendBubble("bot", `**Something went wrong.** ${err.message}\n\nPlease check your internet connection and try again.`);
+  }
+
+  sendBtn.disabled = false;
+  userInput.focus();
+}
+
+// ─────────────────────────────────────────────
+//  Event listeners
+// ─────────────────────────────────────────────
+userInput.addEventListener("input", () => {
+  userInput.style.height = "auto";
+  userInput.style.height = Math.min(userInput.scrollHeight, 120) + "px";
+});
+
+userInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+sendBtn.addEventListener("click", () => sendMessage());
+
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => sendMessage(chip.dataset.q));
+});
+</script>
+</body>
+</html>
